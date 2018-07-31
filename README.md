@@ -7,11 +7,11 @@ This is the README document for SYCL-RNG, a header-only library implementing var
 ## Contents
 
 * bench/
-    - Some benchmarks, used to track the performance of SYCL-DNN.
+    - Some benchmarks, used to track the performance of SYCL-RNG.
 * cmake/
     - Contains helper files and functions for downloading dependencies and performing common tasks (like adding tests, libraries etc.).
 * CMakeLists.txt
-    - The root CMakeLists.txt file, refer to this when building SYCL-DNN.
+    - The root CMakeLists.txt file, refer to this when building SYCL-RNG.
 * CONTRIBUTING.md
     - Information about how to contribute bug reports, code, or other works to this project.
 * include/
