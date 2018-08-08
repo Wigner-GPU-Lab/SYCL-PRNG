@@ -59,7 +59,7 @@ namespace prng
             return temper();
         }
 
-        void discard(unsigned long long z) { for (; 0 < z; --z) this->operator(); }
+        void discard(unsigned long long z) { for (; 0 < z; --z) (*this)(); }
 
         friend bool operator==(const tiny_mersenne_twister_engine_64<Mat1, Mat2, TMat>& lhs,
             const tiny_mersenne_twister_engine_64<Mat1, Mat2, TMat>& rhs)
@@ -164,7 +164,7 @@ namespace prng
             return temper();
         }
 
-        void discard(unsigned long long z) { for (; 0 < z; --z) this->operator(); }
+        void discard(unsigned long long z) { for (; 0 < z; --z) (*this)(); }
 
         friend bool operator==(const tiny_mersenne_twister_engine_32<Mat1, Mat2, TMat>& lhs,
                                const tiny_mersenne_twister_engine_32<Mat1, Mat2, TMat>& rhs)

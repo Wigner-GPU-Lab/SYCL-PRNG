@@ -21,6 +21,13 @@ project (SYCL-PRNG LANGUAGES CXX
 
 # Behavioural options for the project
 option (BUILD_EXAMPLES "Build example applications" ON)
+option (USE_SYCL "Turn on SYCL API support" ON)
+
+# Find dependencies
+if (USE_SYCL)
+  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+  find_package(ComputeCpp)
+endif (USE_SYCL)
 
 # Recurse into target directories
 if (BUILD_EXAMPLES)
