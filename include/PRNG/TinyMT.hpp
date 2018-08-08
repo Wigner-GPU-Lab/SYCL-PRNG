@@ -1,3 +1,12 @@
+// Copyright(c) 2011, 2013 Mutsuo Saito, Makoto Matsumoto, Hiroshima University and The University of Tokyo.
+//
+// Copyright(c) 2018 Máté Ferenc Nagy-Egri, Wigner GPU-Laboratory.
+//
+// All rights reserved.
+//
+// The 3-clause BSD License is applied to this software, see LICENSE.txt
+//
+
 #pragma once
 
 #include <cstddef>  // std::size_t
@@ -22,7 +31,14 @@ namespace prng
 
         static constexpr result_type default_seed = 5489u;
 
-        tiny_mersenne_twister_engine_64(result_type value)
+        tiny_mersenne_twister_engine_64(result_type value) { seed(value); }
+
+        template <typename Sseq> explicit tiny_mersenne_twister_engine_64(Sseq& s);
+
+        tiny_mersenne_twister_engine_64() : tiny_mersenne_twister_engine_64(default_seed) {}
+        tiny_mersenne_twister_engine_64(const tiny_mersenne_twister_engine_64&) = default;
+
+        void seed(result_type value = default_seed)
         {
             state_[0] = value ^ ((result_type)mat1 << 32);
             state_[1] = mat2 ^ tmat;
@@ -30,17 +46,10 @@ namespace prng
             for (int i = 1; i < min_loop; i++)
             {
                 state_[i & 1] ^=
-                    i + UINT64_C(6364136223846793005) *
+                    i + static_cast<result_type>(6364136223846793005) *
                     (state_[(i - 1) & 1] ^ (state_[(i - 1) & 1] >> 62));
             }
         }
-
-        template <typename Sseq> explicit tiny_mersenne_twister_engine_64(Sseq& s);
-
-        tiny_mersenne_twister_engine_64() : tiny_mersenne_twister_engine_64(default_seed) {}
-        tiny_mersenne_twister_engine_64(const tiny_mersenne_twister_engine_64&) = default;
-
-        void seed(result_type value = default_seed);
         template <typename Sseq> void seed(Sseq& s);
 
         result_type operator()()
