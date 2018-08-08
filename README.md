@@ -4,7 +4,7 @@
 
 This is the README document for SYCL-RNG, a header-only library implementing various standard layout pseudo random number generators to be used with SYCL. The generators satisfy the concepts defined by the STL and integrate with `#include <chrono>` as well.
 
-The library provides the following PRNGs:
+The library provides the following PRNGs under the [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause):
 
 - Tiny Mersenne Twister, both the 32/64-bit word derivates. Code is largely based on the original code which can be found in [this repository](https://github.com/MersenneTwister-Lab/TinyMT).
 
