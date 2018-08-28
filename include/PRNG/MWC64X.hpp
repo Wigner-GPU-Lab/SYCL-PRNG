@@ -9,9 +9,16 @@
 
 #pragma once
 
+#ifdef __SYCL_DEVICE_ONLY__
+// SYCL include
+#include <CL/sycl.hpp>
+#endif
+
+// Standard C++ includes
 #include <cstddef>  // std::size_t
 #include <cstdint>  // std::uint64_t
 #include <limits>   // std::numeric_limits::min,max
+#include <array>    // std::array
 
 namespace prng
 {
@@ -42,9 +49,17 @@ namespace prng
 
         result_type operator()()
         {
+            next_state();
+
+            return x ^ c;
         }
 
-        void discard(unsigned long long z) { for (; 0 < z; --z) (*this)(); }
+        void discard(unsigned long long z)
+        {
+            auto tmp = skip_impl_mod64({ x, c }, a, m, z);
+            x = tmp[0];
+            c = tmp[1];
+        }
 
         friend bool operator==(const multiply_with_carry_engine_32<A, M>& lhs,
                                const multiply_with_carry_engine_32<A, M>& rhs)
@@ -73,12 +88,64 @@ namespace prng
 
         inline void next_state()
         {
+#ifdef __SYCL_DEVICE_ONLY__
             std::uint32_t xn = a * x + c;
             std::uint32_t carry = static_cast<std::uint32_t>(xn < c); // The (Xn<C) will be zero or one for scalar
-            std::uint32_t cn = mad_hi(a, x, carry);
+            std::uint32_t cn = cl::sycl::mad_hi(a, x, carry);
 
             x = xn;
             c = cn;
+#else
+            *reinterpret_cast<std::uint64_t*>(this) = x * static_cast<std::uint64_t>(a) + c;
+#endif
+        }
+
+        std::uint64_t add_mod64(std::uint64_t a_,
+                                std::uint64_t b_,
+                                std::uint64_t M_)
+        {
+            std::uint64_t v_ = a_ + b_;
+            if ((v_ >= M_) || (v_ < a_))
+                v_ = v_ - M_;
+            return v_;
+        }
+
+        std::uint64_t mul_mod64(std::uint64_t a_,
+                                std::uint64_t b_,
+                                std::uint64_t M_)
+        {
+            std::uint64_t r_ = 0;
+            while (a_ != 0) {
+                if (a_ & 1)
+                    r_ = add_mod64(r_, b_, M_);
+                b_ = add_mod64(b_, b_, M_);
+                a_ = a_ >> 1;
+            }
+            return r_;
+        }
+
+        std::uint64_t pow_mod64(std::uint64_t a_,
+                                std::uint64_t e_,
+                                std::uint64_t M_)
+        {
+            std::uint64_t sqr_ = a_, acc_ = 1;
+            while (e_ != 0) {
+                if (e_ & 1)
+                    acc_ = mul_mod64(acc_, sqr_, M_);
+                sqr_ = mul_mod64(sqr_, sqr_, M_);
+                e_ = e_ >> 1;
+            }
+            return acc_;
+        }
+
+        std::array<std::uint32_t, 2> skip_impl_mod64(std::array<std::uint32_t, 2> curr_,
+                                                     std::uint64_t distance_)
+        {
+            std::uint64_t m_ = pow_mod64(a, distance, m);
+            std::uint64_t x = curr[0]*(ulong)a + curr[1];
+            x = mul_mod64(x, m_, m);
+            return { (std::uint32_t)(x / a),
+                     (std::uint32_t)(x % a) };
         }
     };
 
