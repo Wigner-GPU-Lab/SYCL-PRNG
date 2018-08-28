@@ -1,4 +1,4 @@
-// Copyright(c) 2011, 2013 Mutsuo Saito, Makoto Matsumoto, Hiroshima University and The University of Tokyo.
+// Copyright (c) 2011, David Thomas
 //
 // Copyright(c) 2018 Máté Ferenc Nagy-Egri, Wigner GPU-Laboratory.
 //
