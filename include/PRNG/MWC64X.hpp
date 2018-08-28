@@ -56,7 +56,7 @@ namespace prng
 
         void discard(unsigned long long z)
         {
-            auto tmp = skip_impl_mod64({ x, c }, a, m, z);
+            auto tmp = skip_impl_mod64({ x, c }, z);
             x = tmp[0];
             c = tmp[1];
         }
@@ -141,13 +141,13 @@ namespace prng
         std::array<std::uint32_t, 2> skip_impl_mod64(std::array<std::uint32_t, 2> curr_,
                                                      std::uint64_t distance_)
         {
-            std::uint64_t m_ = pow_mod64(a, distance, m);
-            std::uint64_t x = curr[0]*(ulong)a + curr[1];
+            std::uint64_t m_ = pow_mod64(a, distance_, m);
+            std::uint64_t x = curr_[0]*(std::uint64_t)a + curr_[1];
             x = mul_mod64(x, m_, m);
             return { (std::uint32_t)(x / a),
                      (std::uint32_t)(x % a) };
         }
     };
 
-    using mwc64x = multiply_with_carry_engine_32<4294883355u, 18446383549859758079ul>;
+    using mwc64x_32 = multiply_with_carry_engine_32<4294883355u, 18446383549859758079ul>;
 }
