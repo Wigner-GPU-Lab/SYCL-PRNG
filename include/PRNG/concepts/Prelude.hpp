@@ -96,7 +96,7 @@ namespace prng
         constexpr bool either = disjunction<bool_constant<Bs>...>::value;
 
         template <bool... Bs>
-        constexpr bool disallow = negation<require<Bs...>>::value;
+        constexpr bool disallow = not require<Bs...>;
 
         template <template <class...> class Op, class... Args>
         constexpr bool exists = is_detected<Op, Args...>::value;

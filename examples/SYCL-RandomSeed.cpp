@@ -101,7 +101,8 @@ int main()
                     auto seed = seeds[i];
 
                     engine_type engine{ seed }; // random seeding
-                    engine_type eng{ std::seed_seq(seed) };
+                    std::seed_seq ss{ seed };
+                    engine_type eng{ ss };
 
                     skip_function_discard(engine); // discard
 

@@ -37,7 +37,7 @@ namespace prng
 
         tiny_mersenne_twister_engine_64(result_type value) { seed(value); }
 
-        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>>::type>
+        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>, tiny_mersenne_twister_engine_64>::type = 0>
         explicit tiny_mersenne_twister_engine_64(Sseq& s) { seed(s); }
 
         tiny_mersenne_twister_engine_64() : tiny_mersenne_twister_engine_64(default_seed) {}
@@ -55,7 +55,7 @@ namespace prng
                     (state_[(i - 1) & 1] ^ (state_[(i - 1) & 1] >> 62));
             }
         }
-        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>>::type>
+        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>, tiny_mersenne_twister_engine_64>::type = 0>
         void seed(Sseq& s) { s.generate(state_, state_ + state_size); }
 
         result_type operator()()
