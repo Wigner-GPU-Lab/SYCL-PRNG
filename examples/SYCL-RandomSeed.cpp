@@ -33,7 +33,7 @@ int main()
     const auto dev_type = cl::sycl::info::device_type::gpu;
     const std::size_t length = 65536u;
     const std::size_t num = 64;
-
+    std::mt19937_64 a;
     try
     {
         // Platform selection
@@ -100,8 +100,8 @@ int main()
                 {
                     auto seed = seeds[i];
 
-                    // Cast required because of ComputeCpp bug
-                    engine_type engine{ static_cast<typename engine_type::result_type>(seed) }; // random seeding
+                    engine_type engine{ seed }; // random seeding
+                    engine_type eng{ std::seed_seq(seed) };
 
                     skip_function_discard(engine); // discard
 

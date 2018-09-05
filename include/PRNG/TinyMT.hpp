@@ -9,6 +9,10 @@
 
 #pragma once
 
+// SYCL-PRNG includes
+#include <PRNG/concepts/SeedSequence.hpp>
+
+// Standard C++ includes
 #include <cstddef>  // std::size_t
 #include <cstdint>  // std::uint64_t
 #include <limits>   // std::numeric_limits::min,max
@@ -33,7 +37,8 @@ namespace prng
 
         tiny_mersenne_twister_engine_64(result_type value) { seed(value); }
 
-        template <typename Sseq> explicit tiny_mersenne_twister_engine_64(Sseq& s);
+        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>>::type>
+        explicit tiny_mersenne_twister_engine_64(Sseq& s) { seed(s); }
 
         tiny_mersenne_twister_engine_64() : tiny_mersenne_twister_engine_64(default_seed) {}
         tiny_mersenne_twister_engine_64(const tiny_mersenne_twister_engine_64&) = default;
@@ -50,7 +55,8 @@ namespace prng
                     (state_[(i - 1) & 1] ^ (state_[(i - 1) & 1] >> 62));
             }
         }
-        template <typename Sseq> void seed(Sseq& s);
+        template <typename Sseq, typename std::enable_if<concepts::SeedSequence<Sseq> and not concepts::ConvertibleTo<Sseq, result_type>>::type>
+        void seed(Sseq& s) { s.generate(state_, state_ + state_size); }
 
         result_type operator()()
         {
