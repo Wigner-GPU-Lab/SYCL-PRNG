@@ -37,7 +37,7 @@ namespace prng
 
         multiply_with_carry_engine_32(result_type value) { seed(value); }
 
-        template <typename Sseq> explicit multiply_with_carry_engine_32(Sseq& s);
+        //template <typename Sseq> explicit multiply_with_carry_engine_32(Sseq& s);
 
         multiply_with_carry_engine_32() : multiply_with_carry_engine_32(default_seed) {}
         multiply_with_carry_engine_32(const multiply_with_carry_engine_32&) = default;
@@ -45,7 +45,7 @@ namespace prng
         void seed(result_type value = default_seed)
         {
         }
-        template <typename Sseq> void seed(Sseq& s);
+        //template <typename Sseq> void seed(Sseq& s);
 
         result_type operator()()
         {
