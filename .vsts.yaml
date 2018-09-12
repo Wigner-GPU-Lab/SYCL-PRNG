@@ -1,5 +1,8 @@
-# Build with the CMake cross-platform build system
+resources:
+- repo: self
+queue:
+  name: Hosted VS2017
+  demands: cmake
+steps:
 - task: CMake@1
-  inputs:
-    #workingDirectory: 'build' # Optional
-    #cmakeArgs: # Optional
+  displayName: 'CMake '
