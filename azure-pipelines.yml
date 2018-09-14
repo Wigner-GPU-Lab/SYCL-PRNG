@@ -4,7 +4,9 @@ pool:
   name: 'Wigner GPU-Lab'
 
 steps:
-- script: cmake -G Ninja -D CMAKE_BUILD_TYPE=Release $(Build.SourcesDirectory)
+- script: |
+    export COMPUTECPP_DIR=/opt/Codeplay/ComputeCpp/latest
+    cmake -G Ninja -D CMAKE_BUILD_TYPE=Release $(Build.SourcesDirectory)
   displayName: 'CMake configuration'
 
 - script: cmake --build .
