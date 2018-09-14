@@ -150,7 +150,7 @@ namespace prng
         template <class T, class U = T>
         constexpr bool EqualityComparable = meta::converts_to<bool, meta::ops::equal_to, T, U>;
 
-        template <class T, class... Args> constexpr bool Constructible = Destructible<T> && std::is_constructible_v<T, Args...>;
+        template <class T, class... Args> constexpr bool Constructible = Destructible<T> && std::is_constructible<T, Args...>::value;
 
         template <class T > constexpr bool DefaultConstructible = Constructible<T>;
 
