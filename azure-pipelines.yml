@@ -6,10 +6,10 @@ pool:
 steps:
 - script: |
     export COMPUTECPP_DIR=/opt/Codeplay/ComputeCpp/latest
-    cmake -G Ninja -D CMAKE_BUILD_TYPE=Release $(Build.SourcesDirectory)
+	cmake -G Ninja -D CMAKE_BUILD_TYPE=Release -B $(Build.StagingDirectory) -H $(Build.SourcesDirectory)
   displayName: 'CMake configuration'
 
-- script: cmake --build .
+- script: cmake --build $(Build.StagingDirectory)
   displayName: 'CMake build'
 
 - script: |
