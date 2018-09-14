@@ -7,7 +7,6 @@ steps:
 - script: cmake -G Ninja -D CMAKE_BUILD_TYPE=Release
   displayName: 'CMake configuration'
 
-steps:
 - script: cmake --build .
   displayName: 'CMake build'
 
