@@ -19,7 +19,7 @@
 
 namespace prng
 {
-    template <std::uint32_t Mat1, std::uint32_t Mat2, std::uint64_t TMat>
+    template <std::uint32_t Mat1, std::uint32_t Mat2, std::uint64_t TMat, std::uint64_t Poly1, std::uint64_t Poly2>
     class tiny_mersenne_twister_engine_64
     {
     public:
@@ -71,14 +71,14 @@ namespace prng
             const tiny_mersenne_twister_engine_64<Mat1, Mat2, TMat>& rhs)
         {
             return (lhs.state_[0] == rhs.state_[0]) &&
-                (lhs.state_[1] == rhs.state_[1]);
+                   (lhs.state_[1] == rhs.state_[1]);
         }
 
         friend bool operator!=(const tiny_mersenne_twister_engine_64<Mat1, Mat2, TMat>& lhs,
             const tiny_mersenne_twister_engine_64<Mat1, Mat2, TMat>& rhs)
         {
             return (lhs.state_[0] != rhs.state_[0]) ||
-                (lhs.state_[1] != rhs.state_[1]);
+                   (lhs.state_[1] != rhs.state_[1]);
         }
 
         static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
@@ -92,6 +92,8 @@ namespace prng
         static constexpr auto mat1 = Mat1;
         static constexpr auto mat2 = Mat2;
         static constexpr auto tmat = TMat;
+        static constexpr auto poly1 = Poly1;
+        static constexpr auto poly2 = Poly2;
 
         // Non-customizable params
         static constexpr int min_loop = 8;
@@ -121,6 +123,79 @@ namespace prng
 
             return x;
         }
+        
+        /// <summary>Polynomial over F<sub>2</sub>, whose degree is equal to or less than 128.</summary>
+        /// <note>LSB of ar[0], i.e. ar[0] & 1, represent constant</note>
+        ///
+        class f2_polynomial_128
+        {
+        public:
+
+            f2_polynomial_128(std::uint64_t low, std::uint64_t high = 0)
+            {
+                f2_polynomial_128 tee{ 2, 0 };
+
+                polynomial_power_mod(tee,
+                                     lower_step,
+                                     upper_step);
+            }
+
+            f2_polynomial_128(std::initializer_list<std::uint64_t> init) : ar_{ init } {}
+
+        private:
+
+            std::array<std::uint64_t, 2> ar_;
+
+            /// <summary>Polynomial over F<sub>2</sub>, whose degree is equal to or less than 256.</summary>
+            /// <note>LSB of ar[0], i.e. ar[0] & 1, represent constant</note>
+            ///
+            class f2_polynomial_256
+            {
+            public:
+
+                f2_polynomial_256(const f2_polynomial_128 poly) : ar_{ poly[0], poly[1], 0, 0 } {}
+
+            private:
+
+                std::array<std::uint64_t, 4> ar_;
+            };
+
+            void polynomial_power_mod(const f2_polynomial_128 x, std::uint64_t low, std::uint64_t high)
+            {
+                f2_polynomial_256 tmp{ x };
+                f2_polynomial_256 lmod{ *this };
+                f2_polynomial_256 result{ 1, 0, 0, 0 };
+
+                for (std::int_fast8_t i = 0; i < 64; i++) {
+                    if ((low & 1) != 0) {
+                        mul_pol(result, tmp);
+                        mod_f2_polynomial_256(result, lmod);
+                    }
+                    square_f2_polynomial_256(tmp);
+                    mod_f2_polynomial_256(tmp, lmod);
+                    lower_power = lower_power >> 1;
+                    if ((lower_power == 0) && (upper_power == 0)) {
+                        break;
+                    }
+                }
+                while (upper_power != 0) {
+                    if ((upper_power & 1) != 0) {
+                        mul_pol(result, tmp);
+                        mod_f2_polynomial_256(result, lmod);
+                    }
+                    square_f2_polynomial_256(tmp);
+                    mod_f2_polynomial_256(tmp, lmod);
+                    upper_power = upper_power >> 1;
+                }
+                topol(dest, result);
+                return;
+            }
+        };
+        
+        void tinymt64_jump(std::uint64_t lower_step,
+                           std::uint64_t upper_step,
+                           const char * poly_str);
+        void tinymt64_jump_by_polynomial(f2_polynomial * jump_poly);
     };
 
     template <std::uint32_t Mat1, std::uint32_t Mat2, std::uint32_t TMat>
