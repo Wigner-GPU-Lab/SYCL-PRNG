@@ -22,6 +22,8 @@ foreach (Example IN ITEMS RandomSeed
                                                CXX_STANDARD_REQUIRED ON
 											   CXX_EXTENSIONS OFF)
 
+  target_compile_definitions (${Example} PUBLIC _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
+
   add_sycl_to_target(TARGET ${Example}
                      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${Example}.cpp)
 
