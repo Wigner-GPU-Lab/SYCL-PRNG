@@ -155,6 +155,86 @@ namespace prng
 
                 f2_polynomial_256(const f2_polynomial_128 poly) : ar_{ poly[0], poly[1], 0, 0 } {}
 
+                f2_polynomial_256& operator+=(const f2_polynomial_256& rhs)
+                {
+                    std::transform(rhs.ar_.cbegin(), rhs.ar_.cend(),
+                                   this->ar_.cbegin(), this->ar_.cend(),
+                                   this->ar_.begin(),
+                                   [](const std::uint64_t & this_val, const std::uint64_t& rhs_val) { return this_val ^ rhs_val; });
+
+                    return *this;
+                }
+                
+                f2_polynomial_256& operator*=(const f2_polynomial_256& rhs)
+                {
+                    f2_polynomial_256 result{ 0, 0, 0, 0 };
+                    std::uint64_t y64 = rhs.ar[0];
+
+                    for (int i = 0; i < 64; i++)
+                    {
+                        if ((y64 & 1) != 0) {
+                            result += rhs;
+                        }
+                        *this <<= 1;
+                        y64 = y64 >> 1;
+                        if ((y64 == 0) && (y->ar[1] == 0)) {
+                            break;
+                        }
+                    }
+                    y64 = y->ar[1];
+                    while (y64 != 0) {
+                        if ((y64 & 1) != 0) {
+                            result += *this;
+                        }
+                        *this <<= 1;
+                        y64 = y64 >> 1;
+                    }
+
+                    *this = result;
+                }
+
+                f2_polynomial_256& operator%=(const f2_polynomial_256& rhs)
+                {
+                    lpol tmp_z;
+                    lpol* tmp = &tmp_z;
+                    int deg = deg_lpol(x);
+                    int dest_deg = deg_lpol(dest);
+                    int diff = dest_deg - deg;
+                    int tmp_deg = deg;
+                    if (diff < 0) {
+                        return;
+                    }
+                    *tmp = *x;
+                    if (diff == 0) {
+                        add_lpol(dest, tmp);
+                        return;
+                    }
+                    shiftup_lpoln(tmp, diff);
+                    tmp_deg += diff;
+                    add_lpol(dest, tmp);
+                    dest_deg = deg_lpol_lazy(dest, dest_deg);
+                    while (dest_deg >= deg) {
+                        shiftdown_lpol1(tmp);
+                        tmp_deg--;
+                        if (dest_deg == tmp_deg) {
+                            add_lpol(dest, tmp);
+                            dest_deg = deg_lpol_lazy(dest, dest_deg);
+                        }
+                    }
+
+                    return *this;
+                }
+
+                f2_polynomial_256& operator<<=(int i)
+                {
+                    ar_ = { ar_[0] << i,
+                            ar_[1] << i | ar_[0] >> (64 - i),
+                            ar_[2] << i | ar_[1] >> (64 - i),
+                            ar_[3] << i | ar_[2] >> (64 - i), };
+
+                    return *this;
+                }
+
             private:
 
                 std::array<std::uint64_t, 4> ar_;
@@ -168,8 +248,8 @@ namespace prng
 
                 for (std::int_fast8_t i = 0; i < 64; i++) {
                     if ((low & 1) != 0) {
-                        mul_pol(result, tmp);
-                        mod_f2_polynomial_256(result, lmod);
+                        result *= tmp;
+                        result %= lmod;
                     }
                     square_f2_polynomial_256(tmp);
                     mod_f2_polynomial_256(tmp, lmod);
